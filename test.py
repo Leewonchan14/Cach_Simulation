@@ -1,3 +1,5 @@
+import random
+
 # 2진수 문자열을 10진수로 변환
 def Trans_int(Num_2):
     return int("0b"+Num_2, base=2)
@@ -25,4 +27,5 @@ s = 2
 b = 2
 b_yte = 2
 cach = [[[0 for x in range(b_yte)] for x in range(s)] for x in range(b)]
-print(cach)
+for i in range(10):
+    print(random.randrange(0,5))
