@@ -43,8 +43,8 @@ elif miss:
             pass
             #사이클 +1
     #사이클 +100
-    #noallocate만 아니면 캐시저장을 하기 때문에
-    if not noallocate:
+    #store-noallocate만 아니면 캐시저장을 하기 때문에
+    if not (noallocate and store):
         pass
 
         #꽉 찼을때

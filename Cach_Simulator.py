@@ -8,21 +8,17 @@ Load_miss = 0
 Store_hit = 0
 Store_miss = 0
 Total_cycle = 0
-
+Acess_Change = 0
 
 # 2진수 문자열을 10진수로 변환
 def Trans_int(Num_2):
     return int("0b"+Num_2, base=2)
 
 # 2진수를 32비트로 확장시키는 함수
-
-
 def Trans_len32(Num_2):
     return "".join(['0' for x in range(32-len(Num_2))])+Num_2
 
 # 확장된 2진수에서 세트 비트와 블럭 비트를 반환하는 함수
-
-
 def get_Set_Block(Num_2, s, b):
     if b == 1:
         Block_bit = '0'
@@ -39,28 +35,21 @@ def get_Set_Block(Num_2, s, b):
 # [0] = set=1 , [1] = block = 1, [2] = bytes = 4bytes [3] = write-allocate
 # [4] = write-through [5] = lru or fifo or random [6] = filename
 
+args = sys.argv[1:]
 
-# args = sys.argv[1:]
+s = int(args[0])
+b = int(args[1])
+size = int(args[2])
+allocate_type = args[3]
+write_type = args[4]
+Out_type = args[5]
+filename = args[6]
 
-# s = int(args[0])
-# b = int(args[1])
-# size = int(args[2])
-# allocate_type = args[3]
-# write_type = args[4]
-# Out_type = args[5]
-# filename = args[6]
 # "C:/Users/twoone14/Desktop/컴구 과제/Cach_Simulation/read01.trace"
-filename = 'gcc.trace'
+
 f = open(filename, "r")
 data = f.read().strip()
 f.close()
-
-s = 4
-b = 4
-size = 128
-allocate_type = "write-allocate"
-write_type = "write-through"
-Out_type = "random"
 
 Adress_Size = int(size/4)
 
@@ -92,6 +81,10 @@ for i in data:
     Block_Num = Trans_int(Block_Bit)
     # Hit!
     if Adress in cach[Set_Num][Block_Num]:
+        ###히트된 리스트
+        Hit_list = cach[Set_Num][Block_Num]
+        ###index 값은 Adress의 인덱스 값!
+        index = Hit_list.index(Adress)
         # Load수 올리고 끝
         if (Ls == 'l'):
             Load_hit += 1
@@ -109,8 +102,16 @@ for i in data:
                 Dirty.append(Adress)
                 # 나중에 사이클 +100
         Total_cycle += 1
+        ###lru 라면 순서를 지키기 위해 Adress를 리스트 뒤로 옮기기
+        if Out_type == "lru":
+            ###삭제
+            Hit_list.remove(Adress)
+            ###뒤 추가
+            Hit_list.append(Adress)
+            ##한번 재보자
     # Miss
     else:
+        Miss_list = cach[Set_Num][Block_Num]
         # Load
         if (Ls == 'l'):
             Load_miss += 1
@@ -125,27 +126,29 @@ for i in data:
         
         Total_cycle += 100
 
-        # allocate type이 write 인 경우 캐시를 이용해야하므로
-        if allocate_type != "no-write-allocate":
-            pass
+        # store-no-allocate인 경우만 캐시저장을 안하므로
+        if not (allocate_type == "no-write-allocate" and Ls == "s"):
 
             # cache에 자리가 있을때
-            if Adress_Size > len(cach[Set_Num][Block_Num]):
+            if Adress_Size > len(Miss_list):
                 pass
 
-            # cache에 자리가 없을때
+            # cache에 자리가 없을때 삭제 해야한다.
             else:
-                # lru 일때
-                if Out_type == "lru":
-                    pass
-                # fifo 일때
-                elif Out_type == "fifo":
-                    pass
+                Delete_Num = "Delete Number"
+                # lru 일때 또는 fifo일때 맨앞 삭제
+                if Out_type == "lru" or Out_type == "fifo":
+                    Delete_Num = Miss_list.pop(0)
+                # random 삭제
                 elif Out_type == "random":
-                    pass
+                    Delete_Num = Miss_list.pop(random.randrange(0,Adress_Size))
 
+                #만약 삭제한 수가 Dirty에 있다면 사이클 + 100 후 삭제
+                if Delete_Num in Dirty:
+                    Total_cycle += 100
+                    Dirty.remove(Delete_Num)
             #캐시 저장
-            cach[Set_Num][Block_Num].append(Adress)
+            Miss_list.append(Adress)
 
         # allocate type이 no 인 경우
         elif write_type == "no-write-allocate":
@@ -160,3 +163,5 @@ print(f"Load misses : {Load_miss}")
 print(f"Store hits : {Store_hit}")
 print(f"Store misses : {Store_miss}")
 print(f"Total cycles : {Total_cycle}")
+print(f"Total Hits : {Load_hit+Store_hit}")
+print(f"Perfomance : {((Load_hit+Store_hit)/Total_cycle)*10000 : .2f}")
