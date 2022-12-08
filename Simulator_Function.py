@@ -175,7 +175,7 @@ def Fucntion(s,b,size,allocate_type,write_type,Out_type,filename):
   s_s = str(s)
   s_b = str(b)
   s_size = str(size)
-  Perfomance[s_s+"_"+s_b+"_"+s_size] = (Load_hit+Store_hit)/Total_cycle
+  Perfomance[s_s+"_"+s_b+"_"+s_size] = 1000*(Load_hit+Store_hit)/Total_cycle
   
 
 write_type = ["write-through","write-back"]
@@ -186,13 +186,14 @@ filename = "gcc.trace"
 
 
 def All_sbsize(i_write_type,i_allocate_type,i_Out_type):
-  s = [64,128,256]
-  b = [64,128,256]
-  size = [64,128,256]
+  s = [32]
+  b = [32]
+  size = [16]
   for i_s in s:
     for i_b in b:
       for i_size in size:
-        Fucntion(i_s,i_b,i_size,i_write_type,i_allocate_type,i_Out_type,"read01.trace")
+        Fucntion(i_s,i_b,i_size,i_write_type,i_allocate_type,i_Out_type,"gcc.trace")
 
-All_sbsize("write-thruogh","write-allocate","lru")
-print(Perfomance)
+All_sbsize("write-thruogh","write-allocate","random")
+for key,value in Perfomance.items():
+    print(f"{key} : {value:.2f}")
