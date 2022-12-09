@@ -9,7 +9,6 @@ Store_hit = 0
 Store_miss = 0
 Total_cycle = 0
 Acess_Change = 0
-
 # 2진수 문자열을 10진수로 변환
 def Trans_int(Num_2):
     return int("0b"+Num_2, base=2)
@@ -29,7 +28,7 @@ def get_Set_Block(Num_2, s, b):
         Set_bit = '0'
     return Set_bit, Block_bit
 
-# python Cach_Simulator.py 1 1 4 write-allocate write-through lru read01.trace
+# python Cach_Simulator.py 32 32 16 write-allocate write-through lru gcc.trace
 # ./csim 256 4 16 write-allocate write-back lru <sometracefile
 
 # [0] = set=1 , [1] = block = 1, [2] = bytes = 4bytes [3] = write-allocate
@@ -125,6 +124,7 @@ for i in data:
                 Total_cycle += 1
         
         Total_cycle += 100
+        
 
         # store-no-allocate인 경우만 캐시저장을 안하므로
         if not (allocate_type == "no-write-allocate" and Ls == "s"):
@@ -146,12 +146,13 @@ for i in data:
                 #만약 삭제한 수가 Dirty에 있다면 사이클 + 100 후 삭제
                 if Delete_Num in Dirty:
                     Total_cycle += 100
+                    
                     Dirty.remove(Delete_Num)
             #캐시 저장
             Miss_list.append(Adress)
 
         # allocate type이 no 인 경우
-        elif write_type == "no-write-allocate":
+        elif allocate_type == "no-write-allocate":
             pass
 
 
@@ -164,4 +165,4 @@ print(f"Store hits : {Store_hit}")
 print(f"Store misses : {Store_miss}")
 print(f"Total cycles : {Total_cycle}")
 print(f"Total Hits : {Load_hit+Store_hit}")
-print(f"Perfomance : {((Load_hit+Store_hit)/Total_cycle)*10000 : .2f}")
+print(f"Perfomance : {((Load_hit+Store_hit)/Total_cycle)*1000 : .2f}")
